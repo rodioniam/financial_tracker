@@ -1,5 +1,5 @@
 # синтаксис очень похож на SQLAlchemy модели, только наследование от другого класса
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from datetime import datetime
 from decimal import Decimal
 from models import TransactionType
@@ -17,15 +17,23 @@ class UserCreate(UserBase):
     password: str
 
 
+class UserLogin(BaseModel):
+    email: str
+    password: str
+
+
 # то что отдаем клиенту
 class UserResponse(UserBase):
-    user_id: int
+    id: int
     created_at: datetime
+
+    # Pydantic должен знать что может читать атрибуты объекта (например, SQLAlchemy объекта модели) а не только словарь.
+    model_config = ConfigDict(from_attributes=True)
 
 
 # для работы внутри сервиса
 class UserInDB(UserBase):
-    user_id: int
+    id: int
     created_at: datetime
     hashed_pwd: str
 
