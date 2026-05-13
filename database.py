@@ -24,3 +24,10 @@ async_session = async_sessionmaker(engine, expire_on_commit=False)
 
 class Base(AsyncAttrs, DeclarativeBase):
     pass
+
+
+# Dependency Injection
+# данная функция - генератор, который открывает сессию, отдает ее функцию и после завершения закрывает
+async def get_session():
+    async with async_session() as session:
+        yield session
