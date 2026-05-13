@@ -7,6 +7,7 @@ import asyncio
 from alembic import context
 
 from database import Base
+# этот импорт нужен чтобы Base.metadata работал как надо
 from models import User, Transaction, Category
 import os
 from dotenv import load_dotenv
@@ -61,8 +62,7 @@ def run_migrations_online() -> None:
     )
 
     def do_run_migrations(connection):
-        context.configure(connection=connection,
-                          target_metadata=target_metadata)
+        context.configure(connection=connection, target_metadata=target_metadata)  # noqa
         with context.begin_transaction():
             context.run_migrations()
 
