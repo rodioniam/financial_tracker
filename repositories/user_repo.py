@@ -9,9 +9,16 @@ async def create_user(user: User, session: AsyncSession):
     return user
 
 
-async def search_user(email: str, session: AsyncSession):
+async def search_user_by_email(email: str, session: AsyncSession):
     # select(User) - SELECT запрос к таблице users. where - условие.
     search = await session.execute(select(User).where(User.email == email))
+    user = search.scalar_one_or_none()
+
+    return user
+
+
+async def search_user_by_id(id: int, session: AsyncSession):
+    search = await session.execute(select(User).where(User.id == id))
     user = search.scalar_one_or_none()
 
     return user
