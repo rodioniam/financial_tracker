@@ -9,6 +9,7 @@ import datetime
 from jose import jwt
 from dotenv import load_dotenv
 import os
+from repositories.user_repo import create_user, search_user
 
 load_dotenv()
 
@@ -20,10 +21,9 @@ async def register_user(user: UserCreate, session: AsyncSession):
     user_dict = user.model_dump()
     user_dict['password'] = password_hash.hash(user_dict['password'])
     # распаковка словаря, так как SQLAlchemy принимает только именнованные аргументы
-    user = User(**user_dict)
-    session.add(user)
-    await session.commit()
-    return user
+    user_obj = User(**user_dict)
+    await create_user(user=user_obj, session=session)
+    return user_obj
 
 
 # генерируем JWT токен
@@ -40,14 +40,13 @@ def generate_token(user_id: int):
 async def login_user(user: UserLogin, session: AsyncSession):
     user_dict = user.model_dump()
     user_email, user_password = user_dict['email'], user_dict['password']
-    # select(User) - SELECT запрос к таблице users. where - условие.
-    search = await session.execute(select(User).where(User.email == user_email))
-    user = search.scalar_one_or_none()  # вернёт объект User или None если не найден
 
-    if not user:
+    user_obj = await search_user(user_email, session=session)
+
+    if not user_obj:
         raise HTTPException(status_code=401, detail='No such user')
     else:
-        if not password_hash.verify(user_password, user.password):
+        if not password_hash.verify(user_password, user_obj.password):
             raise HTTPException(status_code=401, detail='Wrong password')
 
-    return {"access_token": generate_token(user.id)}
+    return {"access_token": generate_token(user_obj.id)}
