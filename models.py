@@ -31,8 +31,9 @@ class Transaction(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     date: Mapped[datetime.datetime] = mapped_column(server_default=func.now())
     amount: Mapped[Decimal]
-    # если использую констранты, созданные через Enum, то нужно делать колонку с такими параметрами
+    # если использую константы, созданные через Enum, то нужно делать колонку с такими параметрами
     type: Mapped[TransactionType] = mapped_column(SAEnum(TransactionType))
+    description: Mapped[str | None]
     category_id: Mapped[int] = mapped_column(ForeignKey("categories.id"))
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
 
