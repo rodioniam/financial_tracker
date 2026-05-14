@@ -42,6 +42,7 @@ class UserInDB(UserBase):
 class TransactionBase(BaseModel):
     date: datetime | None  # сервер сам подставит если пусто
     amount: Decimal
+    description: str | None
     type: TransactionType
     category_id: int
 
