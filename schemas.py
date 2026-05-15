@@ -58,6 +58,14 @@ class TransactionResponse(TransactionBase):
     user_id: int
 
 
+class TransactionUpdate(TransactionBase):
+    date: datetime | None
+    amount: Decimal | None
+    description: str | None
+    type: TransactionType | None
+    category_id: int | None
+
+
 # база категории
 class CategoryBase(BaseModel):
     name: str
