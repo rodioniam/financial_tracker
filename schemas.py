@@ -1,12 +1,13 @@
 # синтаксис очень похож на SQLAlchemy модели, только наследование от другого класса
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field, EmailStr
 from datetime import datetime
 from decimal import Decimal
 from models import TransactionType
+from typing import Annotated
 
 
 class UserBase(BaseModel):
-    email: str
+    email: EmailStr
     name: str
     last_name: str
 
@@ -68,7 +69,7 @@ class TransactionUpdate(TransactionBase):
 
 # база категории
 class CategoryBase(BaseModel):
-    name: str
+    name: Annotated[str, Field(min_length=1)]
     description: str | None
 
 
@@ -80,3 +81,8 @@ class CategoryCreate(CategoryBase):
 # ответ клиенту и внутри сервиса
 class CategoryResponse(CategoryBase):
     category_id: int
+    user_id: int
+
+
+class CategoryUpdate(CategoryBase):
+    name: str | None
