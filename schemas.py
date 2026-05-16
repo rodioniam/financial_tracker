@@ -85,4 +85,4 @@ class CategoryResponse(CategoryBase):
 
 
 class CategoryUpdate(CategoryBase):
-    name: str | None
+    name: Annotated[str, Field(min_length=1)] | None
