@@ -2,6 +2,7 @@ from database import Base
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import func, ForeignKey
 from sqlalchemy import Enum as SAEnum
+from sqlalchemy import UniqueConstraint
 import datetime
 from decimal import Decimal
 from enum import Enum
@@ -42,5 +43,8 @@ class Category(Base):
     __tablename__ = "categories"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(unique=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    name: Mapped[str]
     description: Mapped[str | None]  # способ сделать поле опциональным
+
+    __table_args__ = (UniqueConstraint('user_id', 'name'),)
