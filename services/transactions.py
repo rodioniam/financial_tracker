@@ -1,5 +1,5 @@
 import repositories.transaction_repo as transaction_repo
-from schemas import TransactionCreate, TransactionResponse, TransactionUpdate, UserInDB
+from schemas import TransactionCreate, TransactionUpdate, UserInDB
 from sqlalchemy.ext.asyncio import AsyncSession
 from models import Transaction
 from fastapi import HTTPException
