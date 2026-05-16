@@ -9,12 +9,12 @@ asyncpg = "*"
 python-dotenv = "*"
 alembic = "*"
 greenlet = "*"
-pydantic = "*"
 fastapi = "*"
 uvicorn = "*"
 bcrypt = "*"
 pwdlib = {extras = ["bcrypt"], version = "*"}
 python-jose = {extras = ["cryptography"], version = "*"}
+pydantic = {extras = ["email"], version = "*"}
 
 [dev-packages]
 
