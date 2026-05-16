@@ -10,17 +10,17 @@ from services.auth import register_user, login_user
 router = APIRouter()
 
 
-@router.post("/register")
+# регистрация нового пользователя
+@router.post("/register", response_model=UserResponse, status_code=201)
 # валидация данных происходит на этом этапе автоматически, поэтому не нужно ее валидировать руками
 async def register(user: UserCreate, session: AsyncSession = Depends(get_session)):
     # не забывать что это асинхронная функция
     new_user = await register_user(user, session)
-    # для того чтобы Pydantic мог принимать объект модели SQLAlchemy напрямую нужно использовать model_validate()
-    return_info = UserResponse.model_validate(new_user)
-    print(return_info.model_dump())
-    return return_info
+    print(new_user.__dict__)
+    return new_user
 
 
+# авторизация пользователя
 @router.post("/login")
 async def login(user: UserLogin, session: AsyncSession = Depends(get_session)):
     return await login_user(user, session)
