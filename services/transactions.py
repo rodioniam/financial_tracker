@@ -31,6 +31,7 @@ async def update_transaction(transaction: int, session: AsyncSession, current_us
 
     if current_transaction is not None and current_transaction.user_id == current_user_id:
         await transaction_repo.update_transaction(transaction, session, data_to_upload)
+        return await transaction_repo.get_transaction_by_id(transaction, session)
     else:
         raise HTTPException(status_code=404, detail='Not found')
 
