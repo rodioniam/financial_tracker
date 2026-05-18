@@ -19,7 +19,7 @@ async def create(transaction: TransactionCreate, session: AsyncSession = Depends
     new_transaction = await create_transaction(transaction, session, user)
     # return_info = TransactionResponse.model_validate(new_transaction) # заменяет эти строки
     # print(return_info.model_dump()) # так как теперь возвращается объект SQLAlchemy, то читать его лучше так
-    print(new_transaction.__dict__)
+
     return new_transaction
 
 
@@ -30,7 +30,6 @@ async def get_list(user: User = Depends(get_current_user), session: AsyncSession
     query = await get_transactions(user, session, date, category_id, type)
     result = [q for q in query]
 
-    print([q.__dict__ for q in query])
     return result
 
 
@@ -45,7 +44,7 @@ async def get_one(transaction_id: int, user: User = Depends(get_current_user), s
 @router.patch("/transactions/{transaction_id}", response_model=TransactionResponse, status_code=200)
 async def update(transaction_id: int, transaction: TransactionUpdate, user: User = Depends(get_current_user), session: AsyncSession = Depends(get_session)):
     changes = await update_transaction(transaction=transaction_id, session=session, current_user=user, data=transaction)
-    print(changes.__dict__)
+
     return changes
 
 
@@ -54,5 +53,5 @@ async def update(transaction_id: int, transaction: TransactionUpdate, user: User
 async def delete_tr(transaction_id: int, user: User = Depends(get_current_user), session: AsyncSession = Depends(get_session)):
     tr_to_delete = await get_transaction(transaction=transaction_id, session=session, current_user=user)
     await delete_transaction(transaction=transaction_id, session=session, current_user=user)
-    print(tr_to_delete.__dict__)
+
     return tr_to_delete
