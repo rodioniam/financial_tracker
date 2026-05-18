@@ -35,16 +35,20 @@ class Transaction(Base):
     # если использую константы, созданные через Enum, то нужно делать колонку с такими параметрами
     type: Mapped[TransactionType] = mapped_column(SAEnum(TransactionType))
     description: Mapped[str | None]
-    category_id: Mapped[int] = mapped_column(ForeignKey("categories.id"))
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    category_id: Mapped[int] = mapped_column(
+        ForeignKey("categories.id", ondelete="RESTRICT"))
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"))
 
 
 class Category(Base):
     __tablename__ = "categories"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"))
     name: Mapped[str]
     description: Mapped[str | None]  # способ сделать поле опциональным
 
+# таким образом я сделал так, что в таблице обязательно должно быть уникальное сочетание user_id и name категории
     __table_args__ = (UniqueConstraint('user_id', 'name'),)
