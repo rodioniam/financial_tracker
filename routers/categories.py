@@ -13,7 +13,7 @@ router = APIRouter()
 @router.post("/categories", response_model=CategoryResponse, status_code=201)
 async def create(category: CategoryCreate, session: AsyncSession = Depends(get_session), user: User = Depends(get_current_user)):
     new_category = await create_category(category, session, user)
-    print(new_category.__dict__)
+
     return new_category
 
 
@@ -21,9 +21,9 @@ async def create(category: CategoryCreate, session: AsyncSession = Depends(get_s
 @router.get("/categories", response_model=list[CategoryResponse], status_code=200)
 async def get_list(user: User = Depends(get_current_user), session: AsyncSession = Depends(get_session)):
     query = await get_categories(user, session)
+    result = [q for q in query]
 
-    print([q.__dict__ for q in query])
-    return [q for q in query]
+    return result
 
 
 # FastAPI читает роуты сверху вниз. Если /categories/{category_id} стоит выше,
@@ -44,7 +44,7 @@ async def get_by_id(category_id: int, session: AsyncSession = Depends(get_sessio
 @router.patch("/categories/{category}", response_model=CategoryResponse, status_code=200)
 async def update(category: int, data: CategoryUpdate, session: AsyncSession = Depends(get_session), user: User = Depends(get_current_user)):
     changes = await update_category(category, session, user, data)
-    print(changes.__dict__)
+
     return changes
 
 
@@ -53,5 +53,5 @@ async def update(category: int, data: CategoryUpdate, session: AsyncSession = De
 async def delete_ct(category: int, session: AsyncSession = Depends(get_session), user: User = Depends(get_current_user)):
     ct_to_delete = await get_category_by_id(category, session, user)
     await delete_category(category, session, user)
-    print(ct_to_delete.__dict__)
+
     return ct_to_delete
