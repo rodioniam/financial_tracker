@@ -41,9 +41,9 @@ class UserInDB(UserBase):
 
 # база для транзакции
 class TransactionBase(BaseModel):
-    date: datetime | None  # сервер сам подставит если пусто
+    date: datetime | None = None  # сервер сам подставит если пусто
     amount: Decimal
-    description: str | None
+    description: str | None = None
     type: TransactionType
     category_id: int
 
@@ -55,22 +55,22 @@ class TransactionCreate(TransactionBase):
 
 # ответ клиенту и использование внутри сервиса
 class TransactionResponse(TransactionBase):
-    transaction_id: int
+    id: int  # было transaction_id
     user_id: int
 
 
 class TransactionUpdate(TransactionBase):
-    date: datetime | None
-    amount: Decimal | None
-    description: str | None
-    type: TransactionType | None
-    category_id: int | None
+    date: datetime | None = None
+    amount: Decimal | None = None
+    description: str | None = None
+    type: TransactionType | None = None
+    category_id: int | None = None
 
 
 # база категории
 class CategoryBase(BaseModel):
     name: Annotated[str, Field(min_length=1)]
-    description: str | None
+    description: str | None = None
 
 
 # создание категории
@@ -80,9 +80,15 @@ class CategoryCreate(CategoryBase):
 
 # ответ клиенту и внутри сервиса
 class CategoryResponse(CategoryBase):
-    category_id: int
+    id: int  # было category_id
     user_id: int
 
 
 class CategoryUpdate(CategoryBase):
-    name: Annotated[str, Field(min_length=1)] | None
+    name: Annotated[str, Field(min_length=1)] | None = None
+
+
+# возникла ошибка - в респонс схемах поля category_id/transaction_id не соответствовали названиям в моделях.
+# при создании записей клиент выдавал ошибку, хотя запись успешно создавалась, просто для респонса не совпадали поля
+# такое поведение не правильно, нужно прибегать к "транзакционности" - либо все прошло успешно, либо не прошло ничего.
+# В SQLAlchemy это решается через транзакции с rollback при ошибке, в данном проекте это не реализовано
