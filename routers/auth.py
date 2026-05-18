@@ -16,7 +16,7 @@ router = APIRouter()
 async def register(user: UserCreate, session: AsyncSession = Depends(get_session)):
     # не забывать что это асинхронная функция
     new_user = await register_user(user, session)
-    print(new_user.__dict__)
+
     return new_user
 
 
