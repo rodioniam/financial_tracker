@@ -30,13 +30,14 @@ async def update_category(category: int, session: AsyncSession, current_user: Us
 
     if current_category is not None and current_category.user_id == current_user_id:
         await categories_repo.update_category(category, session, data_to_upload)
+        return await get_category_by_id(category, session, current_user)
     else:
         raise HTTPException(status_code=404, detail='Not found')
 
 
 # поиск списком
 async def get_categories(user: UserInDB, session: AsyncSession):
-    return await categories_repo.get_all_categories(session, user)
+    return await categories_repo.get_all_categories(session, user.id)
 
 
 # поиск по id
