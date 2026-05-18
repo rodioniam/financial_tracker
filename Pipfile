@@ -15,6 +15,9 @@ bcrypt = "*"
 pwdlib = {extras = ["bcrypt"], version = "*"}
 python-jose = {extras = ["cryptography"], version = "*"}
 pydantic = {extras = ["email"], version = "*"}
+pytest = "*"
+pytest-asyncio = "*"
+httpx = "*"
 
 [dev-packages]
 
