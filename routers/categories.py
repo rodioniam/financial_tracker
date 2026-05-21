@@ -10,7 +10,7 @@ router = APIRouter()
 
 
 # создание категории
-@router.post("/categories", response_model=CategoryResponse, status_code=201)
+@router.post("/categories", response_model=CategoryResponse, status_code=201, summary='create transaction')
 async def create(category: CategoryCreate, session: AsyncSession = Depends(get_session), user: User = Depends(get_current_user)):
     new_category = await create_category(category, session, user)
 
@@ -18,7 +18,7 @@ async def create(category: CategoryCreate, session: AsyncSession = Depends(get_s
 
 
 # вывод списка категорий пользователя
-@router.get("/categories", response_model=list[CategoryResponse], status_code=200)
+@router.get("/categories", response_model=list[CategoryResponse], status_code=200, summary='get list of categories for user')
 async def get_list(user: User = Depends(get_current_user), session: AsyncSession = Depends(get_session)):
     query = await get_categories(user, session)
     result = [q for q in query]
@@ -29,19 +29,19 @@ async def get_list(user: User = Depends(get_current_user), session: AsyncSession
 # FastAPI читает роуты сверху вниз. Если /categories/{category_id} стоит выше,
 # то запрос /categories/search/Еда попадёт в него и FastAPI попытается конвертировать "search" в int
 # поиск по имени
-@router.get("/categories/search/{category_name}", response_model=CategoryResponse, status_code=200)
+@router.get("/categories/search/{category_name}", response_model=CategoryResponse, status_code=200, summary='get category by its name')
 async def get_by_name(category_name: str, session: AsyncSession = Depends(get_session), user: User = Depends(get_current_user)):
     return await get_category_by_name(category_name, session, user)
 
 
 # поиск по id
-@router.get("/categories/{category_id}", response_model=CategoryResponse, status_code=200)
+@router.get("/categories/{category_id}", response_model=CategoryResponse, status_code=200, summary='get category by id')
 async def get_by_id(category_id: int, session: AsyncSession = Depends(get_session), user: User = Depends(get_current_user)):
     return await get_category_by_id(category_id, session, user)
 
 
 # обновить категорию
-@router.patch("/categories/{category}", response_model=CategoryResponse, status_code=200)
+@router.patch("/categories/{category}", response_model=CategoryResponse, status_code=200, summary='update category')
 async def update(category: int, data: CategoryUpdate, session: AsyncSession = Depends(get_session), user: User = Depends(get_current_user)):
     changes = await update_category(category, session, user, data)
 
@@ -49,7 +49,7 @@ async def update(category: int, data: CategoryUpdate, session: AsyncSession = De
 
 
 # удалить категорию
-@router.delete("/categories/{category}", response_model=CategoryResponse, status_code=200)
+@router.delete("/categories/{category}", response_model=CategoryResponse, status_code=200, summary='delete category')
 async def delete_ct(category: int, session: AsyncSession = Depends(get_session), user: User = Depends(get_current_user)):
     ct_to_delete = await get_category_by_id(category, session, user)
     await delete_category(category, session, user)

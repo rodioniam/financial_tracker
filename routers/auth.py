@@ -11,7 +11,7 @@ router = APIRouter()
 
 
 # регистрация нового пользователя
-@router.post("/register", response_model=UserResponse, status_code=201)
+@router.post("/register", response_model=UserResponse, status_code=201, summary='register new user')
 # валидация данных происходит на этом этапе автоматически, поэтому не нужно ее валидировать руками
 async def register(user: UserCreate, session: AsyncSession = Depends(get_session)):
     # не забывать что это асинхронная функция
@@ -21,6 +21,6 @@ async def register(user: UserCreate, session: AsyncSession = Depends(get_session
 
 
 # авторизация пользователя
-@router.post("/login")
+@router.post("/login", summary='authorize user')
 async def login(user: UserLogin, session: AsyncSession = Depends(get_session)):
     return await login_user(user, session)
