@@ -221,3 +221,4 @@ __marimo__/
 # User 
 .DS_Store
 # test.py
+code_tests.py
