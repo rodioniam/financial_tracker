@@ -1,8 +1,10 @@
 import repositories.categories_repo as categories_repo
-from schemas import CategoryCreate, CategoryUpdate, UserInDB
+from schemas import CategoryCreate, CategoryUpdate, UserInDB, CategoryResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from models import Category
 from fastapi import HTTPException
+from redis_client import redis_client
+import json
 
 
 async def create_category(category: CategoryCreate, session: AsyncSession, current_user: UserInDB):
@@ -35,9 +37,22 @@ async def update_category(category: int, session: AsyncSession, current_user: Us
         raise HTTPException(status_code=404, detail='Not found')
 
 
-# поиск списком
+# # поиск списком
+# async def get_categories(user: UserInDB, session: AsyncSession):
+#     return await categories_repo.get_all_categories(session, user.id)
+
+
+# поиск списком + кеширование
 async def get_categories(user: UserInDB, session: AsyncSession):
-    return await categories_repo.get_all_categories(session, user.id)
+    key = f'categories:{user.id}'
+    cached = await redis_client.get(key)
+
+    if not cached:
+        categories = [CategoryResponse.model_validate(c, from_attributes=True).model_dump() for c in await categories_repo.get_all_categories(session, user.id)]
+        await redis_client.set(key, json.dumps(categories), ex=3600)
+        cached = json.dumps(categories)
+
+    return json.loads(cached)
 
 
 # поиск по id
