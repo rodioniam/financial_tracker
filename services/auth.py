@@ -6,8 +6,9 @@ from models import User
 from fastapi import HTTPException, Depends
 from fastapi.security import OAuth2PasswordBearer
 from repositories.user_repo import create_user, search_user_by_email, search_user_by_id
-from .utils import generate_token, decode_token
+from .utils import generate_token, decode_token, user_token_key
 from database import get_session
+from redis_client import redis_client
 
 
 password_hash = PasswordHash([BcryptHasher()])
@@ -40,9 +41,21 @@ async def login_user(user: UserLogin, session: AsyncSession):
     return {"access_token": generate_token(user_obj.id)}
 
 
+# logout пользователя
+async def logout_user(token: str = Depends(oauth2_scheme)):
+    user_id = decode_token(token)['user_id']
+    await redis_client.set(user_token_key(user_id), token, ex=3600)
+    return {'status_code': 200, 'detail': 'you are no longer logged in'}
+
+
 # получение текущего пользователя
 async def get_current_user(token: str = Depends(oauth2_scheme), session: AsyncSession = Depends(get_session)):
     user_id = decode_token(token)['user_id']
+    cached = await redis_client.get(user_token_key(user_id))
+
+    if cached:
+        raise HTTPException(status_code=401, detail='Unauthorized')
+
     user_obj = await search_user_by_id(user_id, session=session)
 
     if not user_obj:
