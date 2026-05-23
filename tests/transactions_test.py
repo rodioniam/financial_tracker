@@ -1,4 +1,8 @@
 import pytest
+from limiter import limiter
+
+# чтобы не было конфликта при тесте
+limiter.enabled = False
 
 
 # тест создания категорий
