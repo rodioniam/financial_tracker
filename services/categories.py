@@ -5,6 +5,7 @@ from models import Category
 from fastapi import HTTPException
 from redis_client import redis_client
 import json
+from .utils import categories_key
 
 
 async def create_category(category: CategoryCreate, session: AsyncSession, current_user: UserInDB):
@@ -12,6 +13,7 @@ async def create_category(category: CategoryCreate, session: AsyncSession, curre
     category_dict['user_id'] = current_user.id
     category_obj = Category(**category_dict)
     await categories_repo.create_category(category=category_obj, session=session)
+    await redis_client.delete(categories_key(current_user.id))
     return category_obj
 
 
@@ -21,6 +23,7 @@ async def delete_category(category: int, session: AsyncSession, current_user: Us
 
     if current_category is not None and current_category.user_id == current_user_id:
         await categories_repo.delete_category(category, session)
+        await redis_client.delete(categories_key(current_user.id))
     else:
         raise HTTPException(status_code=404, detail='Not found')
 
@@ -32,6 +35,7 @@ async def update_category(category: int, session: AsyncSession, current_user: Us
 
     if current_category is not None and current_category.user_id == current_user_id:
         await categories_repo.update_category(category, session, data_to_upload)
+        await redis_client.delete(categories_key(current_user.id))
         return await get_category_by_id(category, session, current_user)
     else:
         raise HTTPException(status_code=404, detail='Not found')
@@ -44,12 +48,11 @@ async def update_category(category: int, session: AsyncSession, current_user: Us
 
 # поиск списком + кеширование
 async def get_categories(user: UserInDB, session: AsyncSession):
-    key = f'categories:{user.id}'
-    cached = await redis_client.get(key)
+    cached = await redis_client.get(categories_key(user.id))
 
     if not cached:
         categories = [CategoryResponse.model_validate(c, from_attributes=True).model_dump() for c in await categories_repo.get_all_categories(session, user.id)]
-        await redis_client.set(key, json.dumps(categories), ex=3600)
+        await redis_client.set(categories_key(user.id), json.dumps(categories), ex=3600)
         cached = json.dumps(categories)
 
     return json.loads(cached)
