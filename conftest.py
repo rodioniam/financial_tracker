@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 import os
 from database import Base, get_session
 from main import app
-import httpx
+import fakeredis
 
 
 load_dotenv()
@@ -60,3 +60,9 @@ async def auth_client(client):
     client.headers['Authorization'] = f'Bearer {token}'
 
     yield client
+
+
+@pytest_asyncio.fixture()
+async def fake_redis_client():
+    async with fakeredis.FakeAsyncRedis(decode_responses=True) as client:
+        yield client
