@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from schemas import TransactionCreate, TransactionUpdate, TransactionResponse
 from models import User
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -6,6 +6,7 @@ from database import get_session
 from services.transactions import create_transaction, delete_transaction, update_transaction, get_transactions, get_transaction
 from services.auth import get_current_user
 from datetime import datetime
+from limiter import limiter
 
 
 router = APIRouter()
@@ -15,7 +16,8 @@ router = APIRouter()
 # объект пользователя будет создан на основе функции get_current_user, которая внутри себя проверяет токен
 # использование response_model позволяет заменить строки, которые я закментил ниже - делает автоматически валидацию
 @router.post("/transactions", response_model=TransactionResponse, status_code=201, summary='create transaction')
-async def create(transaction: TransactionCreate, session: AsyncSession = Depends(get_session), user: User = Depends(get_current_user)):
+@limiter.limit("10/minute")
+async def create(request: Request, transaction: TransactionCreate, session: AsyncSession = Depends(get_session), user: User = Depends(get_current_user)):
     new_transaction = await create_transaction(transaction, session, user)
     # return_info = TransactionResponse.model_validate(new_transaction) # заменяет эти строки
     # print(return_info.model_dump()) # так как теперь возвращается объект SQLAlchemy, то читать его лучше так
@@ -26,7 +28,8 @@ async def create(transaction: TransactionCreate, session: AsyncSession = Depends
 # получение транзакций по фильтрам
 # Pydantic схемы нужны только для тела запроса, query параметры передаются прямо в URL
 @router.get("/transactions", response_model=list[TransactionResponse], status_code=200, summary='get list of transactions with filter')
-async def get_list(user: User = Depends(get_current_user), session: AsyncSession = Depends(get_session), date: datetime = None, category_id: int = None, type: str = None):
+@limiter.limit("5/minute")
+async def get_list(request: Request, user: User = Depends(get_current_user), session: AsyncSession = Depends(get_session), date: datetime = None, category_id: int = None, type: str = None):
     query = await get_transactions(user, session, date, category_id, type)
     result = [q for q in query]
 
