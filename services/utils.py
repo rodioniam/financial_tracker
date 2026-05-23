@@ -19,3 +19,13 @@ def generate_token(user_id: int):
 # декодируем токен
 def decode_token(token):
     return jwt.decode(token, key=os.environ['SECRET_KEY'], algorithms=[os.environ['ALGORITHM']])
+
+
+# ключ для redis
+def categories_key(user_id: int):
+    return f'categories:{user_id}'
+
+
+# ключ для users
+def user_token_key(user_id: int):
+    return f'user_token:{user_id}'
