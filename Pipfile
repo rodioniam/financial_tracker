@@ -19,6 +19,8 @@ pytest = "*"
 pytest-asyncio = "*"
 httpx = "*"
 redis = "*"
+fakeredis = "*"
+slowapi = "*"
 
 [dev-packages]
 
