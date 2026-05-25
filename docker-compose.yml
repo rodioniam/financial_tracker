@@ -15,5 +15,10 @@ services:
     ports:
       - '6379:6379'
 
+  mongoDB:
+    image: mongo:8
+    ports:
+      - '27017:27017'
+
 volumes:
   postgres_data:
