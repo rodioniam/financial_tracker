@@ -9,6 +9,7 @@ from repositories.user_repo import create_user, search_user_by_email, search_use
 from .utils import generate_token, decode_token, user_token_key
 from database import get_session
 from redis_client import redis_client
+from logger import log_event
 
 
 password_hash = PasswordHash([BcryptHasher()])
@@ -22,6 +23,8 @@ async def register_user(user: UserCreate, session: AsyncSession):
     # распаковка словаря, так как SQLAlchemy принимает только именнованные аргументы
     user_obj = User(**user_dict)
     await create_user(user=user_obj, session=session)
+    # логирование события в mongodb
+    await log_event('register', user_obj.id, details={'email': user.email})
     return user_obj
 
 
@@ -38,6 +41,8 @@ async def login_user(user: UserLogin, session: AsyncSession):
         if not password_hash.verify(user_password, user_obj.password):
             raise HTTPException(status_code=401, detail='Wrong password')
 
+    # логирование события в mongodb
+    await log_event('login', user_obj.id, details={'email': user_dict['email']})
     return {"access_token": generate_token(user_obj.id)}
 
 
@@ -45,6 +50,7 @@ async def login_user(user: UserLogin, session: AsyncSession):
 async def logout_user(token: str = Depends(oauth2_scheme)):
     user_id = decode_token(token)['user_id']
     await redis_client.set(user_token_key(user_id), token, ex=3600)
+    await log_event('logout', user_id, {'message': 'user logged out'})
     return {'status_code': 200, 'detail': 'you are no longer logged in'}
 
 
