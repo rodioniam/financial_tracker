@@ -7,7 +7,7 @@ from database import get_session
 from services.auth import register_user, login_user, get_current_user, logout_user
 from models import User
 from limiter import limiter
-
+from logger import get_activity
 
 router = APIRouter()
 
@@ -42,3 +42,10 @@ async def get_me(user: User = Depends(get_current_user), session: AsyncSession =
 @router.post("/logout")
 async def log_out_user(result=Depends(logout_user)):
     return result
+
+
+# получить отчет по активности пользователя из mongodb по логам
+@router.get("/activity")
+@limiter.limit("5/minute")
+async def get_user_activity(request: Request, user: User = Depends(get_current_user)):
+    return await get_activity(user.id)

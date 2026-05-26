@@ -4,11 +4,18 @@ from routers.transactions import router as transactions_router
 from routers.categories import router as categories_router
 from slowapi import _rate_limit_exceeded_handler
 from limiter import limiter
+from mongo_db import create_indexes
 
 from slowapi.errors import RateLimitExceeded
 
 
-app = FastAPI()
+async def lifespan(app: FastAPI):
+    await create_indexes()  # логика, которая сработает при запуске приложения
+    yield  # на этом моменте запускается приложение
+    # по сути тут дальше идет логика что будет при выключении приложения
+
+
+app = FastAPI(lifespan=lifespan)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
