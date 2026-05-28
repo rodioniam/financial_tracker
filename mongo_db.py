@@ -14,3 +14,11 @@ events_log = db['events_log']
 async def create_indexes():
     await events_log.create_index('user_id')
     await events_log.create_index('event_type')
+
+
+# для работы тестов
+# хоть монго и не участвует в тестах, он каким то образом может быть импортирован
+def get_events_log():
+    client = AsyncMongoClient(os.environ['MONGO_URL'])
+    db = client['fin_tracker']
+    return db['events_log']

@@ -1,4 +1,4 @@
-from mongo_db import events_log
+from mongo_db import events_log, get_events_log
 from datetime import datetime
 
 
@@ -10,7 +10,7 @@ async def log_event(event_type: str, user_id: int, details: dict):
         'details': details
     }
 
-    await events_log.insert_one(event)
+    await get_events_log().insert_one(event)
 
 
 async def get_activity(user_id):
@@ -28,6 +28,6 @@ async def get_activity(user_id):
         }
     ]
 
-    query = await events_log.aggregate(pipeline)
+    query = await get_events_log().aggregate(pipeline)
 
     return await query.to_list()
