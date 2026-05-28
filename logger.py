@@ -1,4 +1,4 @@
-from mongo_db import events_log, get_events_log
+from mongo_db import get_events_log
 from datetime import datetime
 
 
