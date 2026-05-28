@@ -45,7 +45,7 @@ async def test_delete_category(auth_client):
 @pytest.mark.asyncio
 async def test_get_categories_from_cache(auth_client, fake_redis_client):
     # данная команда позволяет в services/categories заменить redis_client на фейковый клиент
-    with patch('services.categories.redis_client', fake_redis_client):
+    with patch('services.categories.get_redis_client', return_value=fake_redis_client):
         await auth_client.post(url='/categories', json={'name': 'cat_1', 'description': 'text'})
         await auth_client.post(url='/categories', json={'name': 'cat_2'})
         r_user = await auth_client.get(url='/me')
