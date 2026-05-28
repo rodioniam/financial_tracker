@@ -19,8 +19,8 @@ async def test_create_category(auth_client):
 # тест выведения списка категорий пользователя
 @pytest.mark.asyncio
 async def test_get_list_of_categories(auth_client):
-    query = await auth_client.post(url='/categories', json={'name': 'cat_1', 'description': 'text'})
-    query_2 = await auth_client.post(url='/categories', json={'name': 'cat_2'})
+    await auth_client.post(url='/categories', json={'name': 'cat_1', 'description': 'text'})
+    await auth_client.post(url='/categories', json={'name': 'cat_2'})
 
     response = await auth_client.get(url='/categories')
 
@@ -46,8 +46,8 @@ async def test_delete_category(auth_client):
 async def test_get_categories_from_cache(auth_client, fake_redis_client):
     # данная команда позволяет в services/categories заменить redis_client на фейковый клиент
     with patch('services.categories.redis_client', fake_redis_client):
-        query = await auth_client.post(url='/categories', json={'name': 'cat_1', 'description': 'text'})
-        query_2 = await auth_client.post(url='/categories', json={'name': 'cat_2'})
+        await auth_client.post(url='/categories', json={'name': 'cat_1', 'description': 'text'})
+        await auth_client.post(url='/categories', json={'name': 'cat_2'})
         r_user = await auth_client.get(url='/me')
         user_id = r_user.json()['id']
 
