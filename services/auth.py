@@ -8,7 +8,7 @@ from fastapi.security import OAuth2PasswordBearer
 from repositories.user_repo import create_user, search_user_by_email, search_user_by_id
 from .utils import generate_token, decode_token, user_token_key
 from database import get_session
-from redis_client import redis_client
+from redis_client import get_redis_client
 from logger import log_event
 
 
@@ -49,7 +49,7 @@ async def login_user(user: UserLogin, session: AsyncSession):
 # logout пользователя
 async def logout_user(token: str = Depends(oauth2_scheme)):
     user_id = decode_token(token)['user_id']
-    await redis_client.set(user_token_key(user_id), token, ex=3600)
+    await get_redis_client().set(user_token_key(user_id), token, ex=3600)
     await log_event('logout', user_id, {'message': 'user logged out'})
     return {'status_code': 200, 'detail': 'you are no longer logged in'}
 
@@ -57,7 +57,7 @@ async def logout_user(token: str = Depends(oauth2_scheme)):
 # получение текущего пользователя
 async def get_current_user(token: str = Depends(oauth2_scheme), session: AsyncSession = Depends(get_session)):
     user_id = decode_token(token)['user_id']
-    cached = await redis_client.get(user_token_key(user_id))
+    cached = await get_redis_client().get(user_token_key(user_id))
 
     if cached:
         raise HTTPException(status_code=401, detail='Unauthorized')

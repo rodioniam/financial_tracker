@@ -3,7 +3,7 @@ from schemas import CategoryCreate, CategoryUpdate, UserInDB, CategoryResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from models import Category
 from fastapi import HTTPException
-from redis_client import redis_client
+from redis_client import get_redis_client
 import json
 from .utils import categories_key
 from logger import log_event
@@ -15,7 +15,7 @@ async def create_category(category: CategoryCreate, session: AsyncSession, curre
     category_obj = Category(**category_dict)
     await categories_repo.create_category(category=category_obj, session=session)
     await log_event('create_category', current_user.id, {'email': current_user.email})
-    await redis_client.delete(categories_key(current_user.id))
+    await get_redis_client().delete(categories_key(current_user.id))
     return category_obj
 
 
@@ -29,7 +29,7 @@ async def delete_category(category: int, session: AsyncSession, current_user: Us
 
     await log_event('delete_category', current_user.id, {'email': current_user.email})
     await categories_repo.delete_category(category, session)
-    await redis_client.delete(categories_key(current_user.id))
+    await get_redis_client().delete(categories_key(current_user.id))
 
 
 async def update_category(category: int, session: AsyncSession, current_user: UserInDB, data: CategoryUpdate):
@@ -51,7 +51,7 @@ async def update_category(category: int, session: AsyncSession, current_user: Us
     }
     )
     await categories_repo.update_category(category, session, data_to_upload)
-    await redis_client.delete(categories_key(current_user.id))
+    await get_redis_client().delete(categories_key(current_user.id))
     return await get_category_by_id(category, session, current_user)
 
 
@@ -62,7 +62,7 @@ async def update_category(category: int, session: AsyncSession, current_user: Us
 
 # поиск списком + кеширование
 async def get_categories(user: UserInDB, session: AsyncSession):
-    cached = await redis_client.get(categories_key(user.id))
+    cached = await get_redis_client().get(categories_key(user.id))
 
     if not cached:
         categories = [CategoryResponse.model_validate(c, from_attributes=True).model_dump() for c in await categories_repo.get_all_categories(session, user.id)]
@@ -70,7 +70,7 @@ async def get_categories(user: UserInDB, session: AsyncSession):
         if len(categories) == 0:
             await log_event('get_all_categories_empty', user.id, {'notice': 'user do not have any categories'})
 
-        await redis_client.set(categories_key(user.id), json.dumps(categories), ex=3600)
+        await get_redis_client().set(categories_key(user.id), json.dumps(categories), ex=3600)
         cached = json.dumps(categories)
 
     return json.loads(cached)
