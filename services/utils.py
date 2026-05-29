@@ -29,3 +29,13 @@ def categories_key(user_id: int):
 # ключ для users
 def user_token_key(user_id: int):
     return f'user_token:{user_id}'
+
+
+# ключ для аналитики
+def category_amount_analytics_key(user_id: int):
+    return f'category_am_analytics:{user_id}'
+
+
+# ключ для статистики по месяцам
+def monthly_stats_key(user_id: int):
+    return f'monthly_stats:{user_id}'
