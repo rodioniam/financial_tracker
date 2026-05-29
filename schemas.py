@@ -92,3 +92,16 @@ class CategoryUpdate(CategoryBase):
 # при создании записей клиент выдавал ошибку, хотя запись успешно создавалась, просто для респонса не совпадали поля
 # такое поведение не правильно, нужно прибегать к "транзакционности" - либо все прошло успешно, либо не прошло ничего.
 # В SQLAlchemy это решается через транзакции с rollback при ошибке, в данном проекте это не реализовано
+
+class CategoryAnalytics(BaseModel):
+    category_id: int
+    name: str
+    type: TransactionType
+    sum: Decimal
+
+
+class MonthlyStats(BaseModel):
+    type: TransactionType
+    year: datetime
+    month: datetime
+    amount: Decimal
