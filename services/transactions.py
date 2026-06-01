@@ -4,6 +4,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from models import Transaction
 from fastapi import HTTPException
 from logger import log_event
+from redis_client import get_redis_client
+from .utils import category_amount_analytics_key, monthly_stats_key
 
 
 async def create_transaction(transaction: TransactionCreate, session: AsyncSession, current_user: UserInDB):
@@ -12,6 +14,7 @@ async def create_transaction(transaction: TransactionCreate, session: AsyncSessi
     transaction_obj = Transaction(**transaction_dict)
     await transaction_repo.create_transaction(transaction=transaction_obj, session=session)
     await log_event('create_transaction', current_user.id, {'email': current_user.email})
+    await get_redis_client().delete(category_amount_analytics_key(current_user.id), monthly_stats_key(current_user.id))
     return transaction_obj
 
 
@@ -25,6 +28,7 @@ async def delete_transaction(transaction: int, session: AsyncSession, current_us
 
     await transaction_repo.delete_transaction(transaction, session=session)
     await log_event('delete_transaction', current_user.id, {'email': current_user.email})
+    await get_redis_client().delete(category_amount_analytics_key(current_user.id), monthly_stats_key(current_user.id))
 
 
 async def update_transaction(transaction: int, session: AsyncSession, current_user: UserInDB, data: TransactionUpdate):
@@ -56,6 +60,7 @@ async def update_transaction(transaction: int, session: AsyncSession, current_us
         'data_to_upload': data_to_upload
     }
     )
+    await get_redis_client().delete(category_amount_analytics_key(current_user.id), monthly_stats_key(current_user.id))
     return await transaction_repo.get_transaction_by_id(transaction, session)
 
 
