@@ -20,7 +20,7 @@ async def test_get_category_analytics(auth_client):
         'category_id': f'{c2.json()['id']}'
     })
 
-    g_a = await auth_client.get(f'/category/analytics')
+    g_a = await auth_client.get('/category/analytics')
 
     assert g_a.status_code == 200
     assert isinstance(g_a.json(), list)
@@ -43,7 +43,7 @@ async def test_get_monthly_analytics(auth_client):
         'category_id': f'{c1.json()['id']}'
     })
 
-    g_a = await auth_client.get(f'/monthly')
+    g_a = await auth_client.get('/monthly')
 
     assert g_a.status_code == 200
     assert isinstance(g_a.json(), list)
