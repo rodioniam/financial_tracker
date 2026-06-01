@@ -24,8 +24,7 @@ async def get_monthly_stats(user: UserInDB, session: AsyncSession):
     cached = await get_redis_client().get(monthly_stats_key(user.id))
 
     if not cached:
-        query = [MonthlyStats.model_validate(dict(row._mapping)).model_dump(
-            mode='json') for row in await analytics_repo.get_monthly_stats(user.id, session)]
+        query = [MonthlyStats.model_validate(dict(row._mapping)).model_dump(mode='json') for row in await analytics_repo.get_monthly_stats(user.id, session)]  # noqa
         await get_redis_client().set(monthly_stats_key(user.id), json.dumps(query), ex=3600)
         cached = json.dumps(query)
 
