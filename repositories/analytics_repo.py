@@ -1,5 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import func, select, extract
+from sqlalchemy import func, select, extract, Integer
 from models import Transaction, Category
 
 
@@ -29,9 +29,9 @@ async def get_monthly_stats(user_id: int, session: AsyncSession):
     query = await session.execute(
         select(
             Transaction.type,
-            func.sum(Transaction.amount).label('sum'),
-            extract("YEAR", Transaction.date).label('year'),
-            extract("MONTH", Transaction.date).label('month')
+            func.sum(Transaction.amount).label('amount'),
+            extract("YEAR", Transaction.date).cast(Integer).label('year'),
+            extract("MONTH", Transaction.date).cast(Integer).label('month')
         ).where(
             Transaction.user_id == user_id
         ).group_by(
