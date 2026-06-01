@@ -59,3 +59,30 @@ async def test_get_categories_from_cache(auth_client, fake_redis_client):
     assert cached is not None
     assert r1.json()[0]['name'] == 'cat_1'
     assert r2.json()[1]['name'] == 'cat_2'
+
+
+# тест запроса по названию и id категории
+@pytest.mark.asyncio
+async def test_search_by_name_and_id(auth_client):
+    post_category = await auth_client.post(url='/categories', json={'name': 'category_name', 'description': 'text'})
+    r_id = await auth_client.get(url=f'/categories/{post_category.json()['id']}')
+    r_name = await auth_client.get(url=f'/categories/search/{post_category.json()['name']}')
+
+    assert post_category.status_code == 201
+    assert r_id.json()['id'] == 1
+    assert r_name.json()['name'] == 'category_name'
+
+
+# тест обновления категории
+@pytest.mark.asyncio
+async def test_update_category(auth_client):
+    post_category = await auth_client.post(url='/categories', json={'name': 'category_name', 'description': 'text'})
+    assert post_category.status_code == 201
+    assert post_category.json()['name'] == 'category_name'
+    assert post_category.json()['description'] == 'text'
+
+    p_c = await auth_client.patch(url=f'/categories/{post_category.json()['id']}', json={'name': 'change_name', 'description': 'another_text'})
+    assert p_c.status_code == 200
+    assert p_c.json()['name'] == 'change_name'
+    assert p_c.json()['description'] == 'another_text'
+    assert post_category.json()['id'] == p_c.json()['id']
