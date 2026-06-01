@@ -74,3 +74,57 @@ async def test_get_transaction(auth_client):
 
     assert r.status_code == 200
     assert r.json()['amount'] == '9999.99'
+
+
+# тест обновления транзакции
+@pytest.mark.asyncio
+async def test_update_transaction(auth_client):
+    p_c = await auth_client.post('/categories', json={'name': 'test_category', 'description': 'text'})
+    p_c2 = await auth_client.post('/categories', json={'name': 'test_category_2', 'description': 'text'})
+    assert p_c.status_code == 201
+    assert p_c2.status_code == 201
+
+    p_t = await auth_client.post(url='/transactions', json={
+        'amount': 9999.99,
+        'description': 'food',
+        'date': '2025-01-01',
+        'type': 'expense',
+        'category_id': f'{p_c.json()['id']}'
+    })
+
+    assert p_t.status_code == 201
+    assert p_t.json()['category_id'] == p_c.json()['id']
+
+    patch_t = await auth_client.patch(f"/transactions/{p_t.json()['id']}", json={
+        'amount': 10000,
+        'date': '2026-12-12',
+        'category_id': f"{p_c2.json()['id']}"
+    })
+
+    assert patch_t.status_code == 200
+    assert patch_t.json()['id'] == p_t.json()['id']
+    assert patch_t.json()['amount'] != p_t.json()['amount']
+    assert patch_t.json()['amount'] == '10000'
+    assert patch_t.json()['date'] != p_t.json()['date']
+    assert patch_t.json()['category_id'] != p_t.json()['category_id']
+
+
+# тест удаления транзакции
+@pytest.mark.asyncio
+async def test_delete_transaction(auth_client):
+    p_c = await auth_client.post('/categories', json={'name': 'test_category', 'description': 'text'})
+    assert p_c.status_code == 201
+
+    p_t = await auth_client.post(url='/transactions', json={
+        'amount': 9999.99,
+        'description': 'food',
+        'date': '2025-01-01',
+        'type': 'expense',
+        'category_id': f'{p_c.json()['id']}'
+    })
+    assert p_t.status_code == 201
+
+    d_t = await auth_client.delete(f"/transactions/{p_t.json()['id']}")
+    check_deleted = await auth_client.get(f"/transaction/{p_t.json()['id']}")
+    assert d_t.status_code == 200
+    assert check_deleted.status_code == 404
