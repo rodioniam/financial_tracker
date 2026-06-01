@@ -1,5 +1,5 @@
 # синтаксис очень похож на SQLAlchemy модели, только наследование от другого класса
-from pydantic import BaseModel, ConfigDict, Field, EmailStr
+from pydantic import BaseModel, ConfigDict, Field, EmailStr, PlainSerializer
 from datetime import datetime
 from decimal import Decimal
 from models import TransactionType
@@ -100,8 +100,16 @@ class CategoryAnalytics(BaseModel):
     sum: Decimal
 
 
+# создал данный тип для того чтобы amount всегда был в формате float при валидации и вывода данных
+NormalDecimal = Annotated[
+    Decimal,
+    # данный тип позволяет задавать собственную функцию для преобразования данных при сериализации
+    PlainSerializer(lambda x: int(x) if x % 1 == 0 else float(x), return_type=float)  # noqa
+]
+
+
 class MonthlyStats(BaseModel):
     type: TransactionType
-    year: datetime
-    month: datetime
-    amount: Decimal
+    year: int
+    month: int
+    amount: NormalDecimal
