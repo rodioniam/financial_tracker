@@ -45,7 +45,7 @@ async def log_out_user(result=Depends(logout_user)):
 
 
 # получить отчет по активности пользователя из mongodb по логам
-@router.get("/activity")
+@router.get("/activity", summary='get user activity report using logs')
 @limiter.limit("5/minute")
 async def get_user_activity(request: Request, user: User = Depends(get_current_user)):
     return await get_activity(user.id)
