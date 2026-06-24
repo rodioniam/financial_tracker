@@ -78,6 +78,6 @@ async def get_transaction(transaction: int, session: AsyncSession, current_user:
 
 
 # список
-async def get_transactions(current_user: UserInDB, session: AsyncSession, date=None, category_id=None, type=None):
+async def get_transactions(current_user: UserInDB, session: AsyncSession, date=None, category_id=None, type=None, with_category: bool = False):
     await log_event('get_all_transactions', current_user.id, {'email': current_user.email})
-    return await transaction_repo.filter_transactions(session=session, user_id=current_user.id, date=date, category_id=category_id, type=type)
+    return await transaction_repo.filter_transactions(session=session, user_id=current_user.id, date=date, category_id=category_id, type=type, with_category=with_category)
